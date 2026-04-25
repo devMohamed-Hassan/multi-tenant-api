@@ -12,5 +12,6 @@ public class AuthResponse {
      private String role;
      private String tenantName;
      private String tenantDomain;
-     private String token;
+     private String accessToken;
+     private String refreshToken;
 }

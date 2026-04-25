@@ -7,6 +7,7 @@ import com.saasauth.multitenant.dto.AuthResponse;
 import com.saasauth.multitenant.dto.LoginRequest;
 import com.saasauth.multitenant.dto.RegisterRequest;
 import com.saasauth.multitenant.exception.UserAlreadyExistsException;
+import com.saasauth.multitenant.model.RefreshToken;
 import com.saasauth.multitenant.model.Role;
 import com.saasauth.multitenant.model.Tenant;
 import com.saasauth.multitenant.model.User;
@@ -24,6 +25,7 @@ public class AuthService {
      private final TenantRepository tenantRepository;
      private final PasswordEncoder passwordEncoder;
      private final JwtUtil jwtUtil;
+     private final RefreshTokenService refreshTokenService;
 
      public AuthResponse register(RegisterRequest request) {
           if (userRepository.existsByEmail(request.getEmail())) {
@@ -47,6 +49,7 @@ public class AuthService {
           userRepository.save(user);
 
           String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name(), tenant.getId());
+          RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
 
           return AuthResponse.builder()
                     .name(user.getName())
@@ -54,8 +57,9 @@ public class AuthService {
                     .role(user.getRole().name())
                     .tenantName(tenant.getName())
                     .tenantDomain(tenant.getDomain())
-                    .token(token)
+                    .accessToken(token)
                     .type("Bearer")
+                    .refreshToken(refreshToken.getToken())
                     .build();
      }
 
@@ -71,6 +75,7 @@ public class AuthService {
           }
 
           String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name(), tenant.getId());
+          RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
 
           return AuthResponse.builder()
                     .name(user.getName())
@@ -78,8 +83,9 @@ public class AuthService {
                     .role(user.getRole().name())
                     .tenantName(tenant.getName())
                     .tenantDomain(tenant.getDomain())
-                    .token(token)
+                    .accessToken(token)
                     .type("Bearer")
+                    .refreshToken(refreshToken.getToken())
                     .build();
      }
 }
