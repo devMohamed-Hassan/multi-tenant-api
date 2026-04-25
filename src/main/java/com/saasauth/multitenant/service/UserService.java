@@ -1,6 +1,7 @@
 package com.saasauth.multitenant.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -16,20 +17,29 @@ public class UserService {
 
      private final UserRepository userRepository;
 
-     public User getByEmail(String email) {
-          return userRepository.findByEmail(email)
+     public UserResponse getByEmail(String email) {
+          User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
-     }
-
-     public UserResponse getProfileByEmail(String email) {
-          return UserResponse.from(getByEmail(email));
+          return mapToResponse(user);
      }
 
      public List<UserResponse> getAllByTenant(String email) {
-          User user = getByEmail(email);
+          User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
           return userRepository.findAllByTenant(user.getTenant())
                     .stream()
-                    .map(UserResponse::from)
-                    .toList();
+                    .map(this::mapToResponse)
+                    .collect(Collectors.toList());
+     }
+
+     private UserResponse mapToResponse(User user) {
+          return UserResponse.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .email(user.getEmail())
+                    .role(user.getRole().name())
+                    .tenantName(user.getTenant().getName())
+                    .tenantDomain(user.getTenant().getDomain())
+                    .build();
      }
 }
