@@ -20,6 +20,7 @@ import com.saasauth.multitenant.security.JwtUtil;
 import com.saasauth.multitenant.service.AuthService;
 import com.saasauth.multitenant.service.RefreshTokenService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -32,14 +33,16 @@ public class AuthController {
      private final JwtUtil jwtUtil;
 
      @PostMapping("/register")
-     public ResponseEntity<ApiResponse<AuthResponse>> register(@RequestBody RegisterRequest request) {
+     public ResponseEntity<ApiResponse<AuthResponse>> register(
+               @Valid @RequestBody RegisterRequest request) {
           AuthResponse data = authService.register(request);
           return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.ok("Registration successful", data));
      }
 
      @PostMapping("/login")
-     public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody LoginRequest request) {
+     public ResponseEntity<ApiResponse<AuthResponse>> login(
+               @Valid @RequestBody LoginRequest request) {
           AuthResponse data = authService.login(request);
           return ResponseEntity.ok(ApiResponse.ok("Login successful", data));
      }
