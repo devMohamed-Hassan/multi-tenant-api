@@ -20,9 +20,12 @@ import com.saasauth.multitenant.security.JwtUtil;
 import com.saasauth.multitenant.service.AuthService;
 import com.saasauth.multitenant.service.RefreshTokenService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Authentication", description = "Register, login, refresh and logout")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -32,6 +35,7 @@ public class AuthController {
      private final RefreshTokenService refreshTokenService;
      private final JwtUtil jwtUtil;
 
+     @Operation(summary = "Register a new user")
      @PostMapping("/register")
      public ResponseEntity<ApiResponse<AuthResponse>> register(
                @Valid @RequestBody RegisterRequest request) {
@@ -40,6 +44,7 @@ public class AuthController {
                     .body(ApiResponse.ok("Registration successful", data));
      }
 
+     @Operation(summary = "Login with email and password")
      @PostMapping("/login")
      public ResponseEntity<ApiResponse<AuthResponse>> login(
                @Valid @RequestBody LoginRequest request) {
@@ -47,6 +52,7 @@ public class AuthController {
           return ResponseEntity.ok(ApiResponse.ok("Login successful", data));
      }
 
+     @Operation(summary = "Refresh access token using refresh token as Bearer")
      @PostMapping("/refresh")
      public ResponseEntity<ApiResponse<AuthResponse>> refresh(
                @RequestHeader("Authorization") String authHeader) {
@@ -78,8 +84,10 @@ public class AuthController {
           return ResponseEntity.ok(ApiResponse.ok("Token refreshed", response));
      }
 
+     @Operation(summary = "Logout and revoke refresh token")
      @PostMapping("/logout")
-     public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal UserDetails userDetails) {
+     public ResponseEntity<ApiResponse<Void>> logout(
+               @AuthenticationPrincipal UserDetails userDetails) {
           refreshTokenService.deleteByUser(userDetails.getUsername());
           return ResponseEntity.ok(ApiResponse.ok("Logged out successfully", null));
      }

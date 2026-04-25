@@ -32,7 +32,19 @@ public class SecurityConfig {
                     .sessionManagement(session -> session
                               .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authorizeHttpRequests(auth -> auth
-                              .requestMatchers("/api/auth/**").permitAll()
+                              .dispatcherTypeMatchers(
+                                        jakarta.servlet.DispatcherType.ERROR,
+                                        jakarta.servlet.DispatcherType.FORWARD)
+                              .permitAll()
+                              .requestMatchers(
+                                        "/api/auth/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/v3/api-docs",
+                                        "/v3/api-docs/**",
+                                        "/v3/api-docs.yaml",
+                                        "/webjars/**")
+                              .permitAll()
                               .anyRequest().authenticated())
                     .exceptionHandling(ex -> ex
                               .authenticationEntryPoint((request, response, authException) -> {

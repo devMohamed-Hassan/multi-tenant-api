@@ -3,6 +3,7 @@ package com.saasauth.multitenant.service;
 import org.springframework.stereotype.Service;
 
 import com.saasauth.multitenant.dto.TenantResponse;
+import com.saasauth.multitenant.dto.TenantUpdateRequest;
 import com.saasauth.multitenant.model.Tenant;
 import com.saasauth.multitenant.model.User;
 import com.saasauth.multitenant.repository.TenantRepository;
@@ -23,7 +24,7 @@ public class TenantService {
           return mapToResponse(user.getTenant());
      }
 
-     public TenantResponse updateTenant(String email, TenantResponse request) {
+     public TenantResponse updateTenant(String email, TenantUpdateRequest request) {
           User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 

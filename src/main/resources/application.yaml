@@ -30,3 +30,13 @@ app:
     secret: ${JWT_SECRET}
     expiration: ${JWT_EXPIRATION}
   message: ${APP_MESSAGE}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    disable-swagger-default-url: true
+  packages-to-scan: com.saasauth.multitenant
