@@ -2,6 +2,8 @@ package com.saasauth.multitenant.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -10,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -18,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
      private final JwtFilter jwtFilter;
+     private final CustomUserDetailsService userDetailsService;
 
      @Bean
      public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -28,6 +32,20 @@ public class SecurityConfig {
                     .authorizeHttpRequests(auth -> auth
                               .requestMatchers("/api/auth/**").permitAll()
                               .anyRequest().authenticated())
+                    .exceptionHandling(ex -> ex
+                              .authenticationEntryPoint((request, response, authException) -> {
+                                   response.setContentType("application/json");
+                                   response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                   response.getWriter().write(
+                                             "{\"success\":false,\"message\":\"Access denied: missing or invalid token\",\"data\":null}");
+                              })
+                              .accessDeniedHandler((request, response, accessDeniedException) -> {
+                                   response.setContentType("application/json");
+                                   response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                                   response.getWriter().write(
+                                             "{\"success\":false,\"message\":\"Access denied: insufficient permissions\",\"data\":null}");
+                              }))
+                    .userDetailsService(userDetailsService)
                     .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
           return http.build();
@@ -36,5 +54,10 @@ public class SecurityConfig {
      @Bean
      public PasswordEncoder passwordEncoder() {
           return new BCryptPasswordEncoder();
+     }
+
+     @Bean
+     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+          return config.getAuthenticationManager();
      }
 }
