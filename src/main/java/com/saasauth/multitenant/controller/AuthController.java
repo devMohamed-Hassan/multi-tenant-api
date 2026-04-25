@@ -1,5 +1,7 @@
 package com.saasauth.multitenant.controller;
 
+import java.time.Instant;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +21,7 @@ import com.saasauth.multitenant.model.User;
 import com.saasauth.multitenant.security.JwtUtil;
 import com.saasauth.multitenant.service.AuthService;
 import com.saasauth.multitenant.service.RefreshTokenService;
+import com.saasauth.multitenant.service.TokenBlacklistService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,12 +30,13 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Authentication", description = "Register, login, refresh and logout")
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
      private final AuthService authService;
      private final RefreshTokenService refreshTokenService;
+     private final TokenBlacklistService tokenBlacklistService;
      private final JwtUtil jwtUtil;
 
      @Operation(summary = "Register a new user")
@@ -87,8 +91,15 @@ public class AuthController {
      @Operation(summary = "Logout and revoke refresh token")
      @PostMapping("/logout")
      public ResponseEntity<ApiResponse<Void>> logout(
-               @AuthenticationPrincipal UserDetails userDetails) {
+               @AuthenticationPrincipal UserDetails userDetails,
+               @RequestHeader("Authorization") String authHeader) {
+
+          String accessToken = authHeader.substring(7);
+          Instant expiry = jwtUtil.extractExpiration(accessToken);
+          tokenBlacklistService.blacklist(accessToken, expiry);
+
           refreshTokenService.deleteByUser(userDetails.getUsername());
+
           return ResponseEntity.ok(ApiResponse.ok("Logged out successfully", null));
      }
 }

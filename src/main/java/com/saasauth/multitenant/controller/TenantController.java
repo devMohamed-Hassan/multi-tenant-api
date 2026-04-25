@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Tenant", description = "Tenant info and management")
 @RestController
-@RequestMapping("/api/tenant")
+@RequestMapping("/api/v1/tenant")
 @RequiredArgsConstructor
 public class TenantController {
 

@@ -19,7 +19,7 @@ public class SwaggerConfig {
                     .info(new Info()
                               .title("Multi-Tenant API")
                               .description("Multi-tenant SaaS authentication API with JWT")
-                              .version("1.0.0")
+                              .version("v1.0.0")
                               .contact(new Contact()
                                         .name("Your Name")
                                         .email("your@email.com")))
