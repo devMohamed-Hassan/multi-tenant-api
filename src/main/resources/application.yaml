@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: multi-tenant-api
+  profiles:
+    active: ${SPRING_PROFILE:dev}
 
   datasource:
     url: ${DB_URL}
