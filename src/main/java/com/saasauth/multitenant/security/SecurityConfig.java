@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
      private final JwtFilter jwtFilter;
+     private final RateLimitFilter rateLimitFilter;
      private final CustomUserDetailsService userDetailsService;
 
      @Bean
@@ -60,6 +61,7 @@ public class SecurityConfig {
                                              "{\"success\":false,\"message\":\"Access denied: insufficient permissions\",\"data\":null}");
                               }))
                     .userDetailsService(userDetailsService)
+                    .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                     .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
           return http.build();

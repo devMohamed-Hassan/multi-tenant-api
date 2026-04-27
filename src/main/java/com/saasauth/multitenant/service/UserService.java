@@ -5,10 +5,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.saasauth.multitenant.dto.ChangePasswordRequest;
+import com.saasauth.multitenant.dto.UpdateProfileRequest;
+import com.saasauth.multitenant.dto.UpdateRoleRequest;
 import com.saasauth.multitenant.dto.UserResponse;
 import com.saasauth.multitenant.model.User;
+import com.saasauth.multitenant.repository.RefreshTokenRepository;
 import com.saasauth.multitenant.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,7 @@ public class UserService {
 
      private final UserRepository userRepository;
      private final PasswordEncoder passwordEncoder;
+     private final RefreshTokenRepository refreshTokenRepository;
 
      public UserResponse getByEmail(String email) {
           User user = userRepository.findByEmail(email)
@@ -49,6 +54,51 @@ public class UserService {
 
           user.setPassword(passwordEncoder.encode(request.getNewPassword()));
           userRepository.save(user);
+     }
+
+     public UserResponse updateUserRole(Long userId, UpdateRoleRequest request, String adminEmail) {
+          User admin = userRepository.findByEmail(adminEmail)
+                    .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+          User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+          if (!user.getTenant().getId().equals(admin.getTenant().getId())) {
+               throw new RuntimeException("Access denied: user not in your tenant");
+          }
+
+          user.setRole(request.getRole());
+          userRepository.save(user);
+          return mapToResponse(user);
+     }
+
+     @Transactional
+     public void deleteUser(Long userId, String adminEmail) {
+          User admin = userRepository.findByEmail(adminEmail)
+                    .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+          User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+          if (!user.getTenant().getId().equals(admin.getTenant().getId())) {
+               throw new RuntimeException("Access denied: user not in your tenant");
+          }
+          
+          if (user.getId().equals(admin.getId())) {
+               throw new RuntimeException("You cannot delete your own account");
+          }
+
+          refreshTokenRepository.deleteByUser(user);
+          userRepository.delete(user);
+     }
+
+     public UserResponse updateProfile(String email, UpdateProfileRequest request) {
+          User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+          user.setName(request.getName());
+          userRepository.save(user);
+          return mapToResponse(user);
      }
 
      private UserResponse mapToResponse(User user) {
