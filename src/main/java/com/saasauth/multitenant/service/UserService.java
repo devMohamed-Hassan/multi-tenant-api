@@ -24,6 +24,7 @@ public class UserService {
      private final UserRepository userRepository;
      private final PasswordEncoder passwordEncoder;
      private final RefreshTokenRepository refreshTokenRepository;
+     private final EmailService emailService;
 
      public UserResponse getByEmail(String email) {
           User user = userRepository.findByEmail(email)
@@ -54,6 +55,8 @@ public class UserService {
 
           user.setPassword(passwordEncoder.encode(request.getNewPassword()));
           userRepository.save(user);
+
+          emailService.sendPasswordChangedEmail(user.getEmail(), user.getName());
      }
 
      public UserResponse updateUserRole(Long userId, UpdateRoleRequest request, String adminEmail) {
