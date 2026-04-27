@@ -54,14 +54,14 @@ public class EmailService {
   }
 
   @Async
-  public void sendPasswordResetEmail(String to, String name, String resetToken) {
+  public void sendPasswordResetEmail(String to, String name, String otp) {
     try {
       MimeMessage message = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(message, true);
       helper.setFrom(fromEmail);
       helper.setTo(to);
-      helper.setSubject("Password Reset Request");
-      helper.setText(buildPasswordResetEmail(name, resetToken), true);
+      helper.setSubject("Your Verification Code");
+      helper.setText(buildPasswordResetEmail(name, otp), true);
       mailSender.send(message);
       log.info("Password reset email sent to {}", to);
     } catch (MessagingException e) {
@@ -169,7 +169,7 @@ public class EmailService {
                         Your account password has been successfully updated.
                       </p>
 
-                      <!-- Info Box -->
+                      <!-- Warning Box -->
                       <table width="100%%" cellpadding="0" cellspacing="0" style="margin:8px 0 20px;">
                         <tr>
                           <td style="background-color:#fffbeb; border-left:3px solid #f59e0b; border-radius:4px; padding:14px 18px;">
@@ -202,7 +202,7 @@ public class EmailService {
         .formatted(name);
   }
 
-  private String buildPasswordResetEmail(String name, String resetToken) {
+  private String buildPasswordResetEmail(String name, String otp) {
     return """
         <!DOCTYPE html>
         <html>
@@ -237,14 +237,14 @@ public class EmailService {
                     <td style="padding:28px 48px 36px;">
                       <p style="margin:0 0 16px; font-size:15px; color:#374151; line-height:1.7;">Dear <strong>%s</strong>,</p>
                       <p style="margin:0 0 24px; font-size:15px; color:#374151; line-height:1.7;">
-                        We received a request to reset your password. Please use the verification token below to continue.
+                        We received a request to reset your password. Please use the verification code below to continue.
                       </p>
 
-                      <!-- Token Box -->
+                      <!-- OTP Box -->
                       <table width="100%%" cellpadding="0" cellspacing="0">
                         <tr>
                           <td style="background-color:#f8f9fb; border:1px solid #e2e5ea; border-radius:6px; padding:24px; text-align:center;">
-                            <p style="margin:0 0 6px; font-size:11px; font-weight:600; letter-spacing:1.5px; color:#9ca3af; text-transform:uppercase;">Your Reset Token</p>
+                            <p style="margin:0 0 6px; font-size:11px; font-weight:600; letter-spacing:1.5px; color:#9ca3af; text-transform:uppercase;">Your Verification Code</p>
                             <p style="margin:0; font-size:30px; font-weight:700; letter-spacing:8px; color:#1e1e2d; font-family:monospace;">%s</p>
                           </td>
                         </tr>
@@ -255,7 +255,7 @@ public class EmailService {
                         <tr>
                           <td style="background-color:#f8f9fb; border-left:3px solid #6366f1; border-radius:4px; padding:12px 16px;">
                             <p style="margin:0; font-size:13px; color:#6b7280; line-height:1.6;">
-                              This token expires in <strong>15 minutes</strong>. Do not share it with anyone.
+                              This code expires in <strong>15 minutes</strong>. Do not share it with anyone.
                             </p>
                           </td>
                         </tr>
@@ -283,6 +283,6 @@ public class EmailService {
         </body>
         </html>
         """
-        .formatted(name, resetToken);
+        .formatted(name, otp);
   }
 }
