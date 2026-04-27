@@ -109,6 +109,9 @@ public class UserService {
                     .role(user.getRole().name())
                     .tenantName(user.getTenant().getName())
                     .tenantDomain(user.getTenant().getDomain())
+                    .createdAt(user.getCreatedAt())
+                    .updatedAt(user.getUpdatedAt())
+                    .createdBy(user.getCreatedBy())
                     .build();
      }
 }

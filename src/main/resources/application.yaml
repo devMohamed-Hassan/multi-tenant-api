@@ -43,3 +43,10 @@ springdoc:
     disable-swagger-default-url: true
   packages-to-scan: com.saasauth.multitenant
   paths-to-match: /api/v1/**
+
+logging:
+  level:
+    root: INFO
+    com.saasauth: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
